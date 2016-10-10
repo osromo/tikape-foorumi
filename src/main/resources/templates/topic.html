@@ -15,7 +15,7 @@
                 
             </li>
         </ul>
-        <form method="POST" action="/shitpost">
+        <form method="POST" th:action="${'/topic/' + viestiketju}">
             Nimi:<br/>
             <input type="text" name="nimi"/><br/>
             viesti:<br/>
