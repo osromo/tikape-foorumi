@@ -9,9 +9,19 @@
     <body>
         <ul>
             <li th:each="viesti: ${viestit}">
+                <span th:text="${viesti.aikaleima}"></span>
+                <span th:text="${viesti.kirjoittaja.nimimerkki}"></span>:
                 <span th:text="${viesti.viesti}"></span>
+                
             </li>
         </ul>
+        <form method="POST" action="/shitpost">
+            Nimi:<br/>
+            <input type="text" name="nimi"/><br/>
+            viesti:<br/>
+            <input type="text" name="viesti"/><br/>
+            <input type="submit" value="Lähetä viesti"/>
+        </form>
 
     </body>
 </html>
