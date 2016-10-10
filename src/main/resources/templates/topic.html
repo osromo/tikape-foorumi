@@ -8,8 +8,8 @@
 
     <body>
         <ul>
-            <li th:each="alue: ${alueet}">
-                <a th:href="${'/forum/' + alue.alue_id}"><span th:text="${alue.nimi}"></span></a>
+            <li th:each="viesti: ${viestit}">
+                <span th:text="${viesti.viesti}"></span>
             </li>
         </ul>
 
