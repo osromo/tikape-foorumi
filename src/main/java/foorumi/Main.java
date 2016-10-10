@@ -4,10 +4,13 @@ package foorumi;
 import foorumi.database.AlueDao;
 import foorumi.database.Dao;
 import foorumi.database.Database;
+import foorumi.database.KayttajaDao;
 import foorumi.database.ViestiDao;
 import foorumi.database.ViestiketjuDao;
 import foorumi.domain.Alue;
+import foorumi.domain.Kayttaja;
 import foorumi.domain.Viesti;
+import foorumi.domain.Viestiketju;
 import java.sql.SQLException;
 import java.util.HashMap;
 import spark.ModelAndView;
@@ -22,6 +25,7 @@ public class Main {
         AlueDao alueDao = new AlueDao(database);
         ViestiketjuDao viestiketjuDao = new ViestiketjuDao(database);
         ViestiDao viestiDao = new ViestiDao(database);
+        KayttajaDao kayttajaDao = new KayttajaDao(database);
         
         get("/", (req, res) -> {
             HashMap map = new HashMap<>();
@@ -33,8 +37,8 @@ public class Main {
         
         get("/forum/:id", (req, res) -> {
             HashMap map = new HashMap<>();
-            map.put("alue", "Alue"); //alueDao.findOne(Integer.parseInt(req.params("id"))));
-            map.put("viestiketjut", viestiketjuDao.findAll()); //.findAllWithValue("alue", req.params("id")));
+            map.put("alue", alueDao.findOne(Integer.parseInt(req.params("id"))));
+            map.put("viestiketjut", viestiketjuDao.findAllWithValue("alue", req.params("id")));
             
             return new ModelAndView(map, "forum");
         }, new ThymeleafTemplateEngine());
@@ -42,10 +46,21 @@ public class Main {
         
         get("/topic/:id", (req, res) -> {
             HashMap map = new HashMap<>();
-            map.put("viestit", viestiDao.findAll());
+            map.put("viestiketju", req.params("id"));
+            map.put("viestit", viestiDao.findAllWithValue("viestiketju", req.params("id")));
             
             return new ModelAndView(map, "topic");
         }, new ThymeleafTemplateEngine());
         
+        post("/topic/:id", (req, res) -> {
+            Kayttaja kirjoittaja = kayttajaDao.findOneWithValue("nimimerkki", req.queryParams("nimi"));
+            Viestiketju viestiketju = viestiketjuDao.findOne(Integer.parseInt(req.params("id")));
+            Viesti viesti = new Viesti(viestiketju, kirjoittaja, req.queryParams("viesti"));
+            viestiDao.save(viesti);
+            
+            res.redirect("/topic/" + req.params("id"));
+            
+            return "";
+        });
     }
 }
