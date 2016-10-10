@@ -10,6 +10,14 @@ public class Viesti {
     private Kayttaja kirjoittaja;
     private String aikaleima;
     private String viesti;
+    
+    public void setViestiketju(Viestiketju viestiketju) {
+        this.viestiketju = viestiketju;
+    }
+
+    public void setKirjoittaja(Kayttaja kirjoittaja) {
+        this.kirjoittaja = kirjoittaja;
+    }
 
     public Viesti(int viesti_id, Viestiketju viestiketju, Kayttaja kirjoittaja, String aikaleima, String viesti) {
         this.viesti_id = viesti_id;
@@ -22,6 +30,12 @@ public class Viesti {
     public Viesti(int viesti_id, String aikaleima, String viesti) {
         this.viesti_id = viesti_id;
         this.aikaleima = aikaleima;
+        this.viesti = viesti;
+    }
+
+    public Viesti(Viestiketju viestiketju, Kayttaja kirjoittaja, String viesti) {
+        this.viestiketju = viestiketju;
+        this.kirjoittaja = kirjoittaja;
         this.viesti = viesti;
     }
 
