@@ -36,6 +36,17 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
     }
     
     @Override
+    public List<Viestiketju> findAllIn(Collection<Integer> keys) throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        Iterator iterator = keys.iterator();
+        while (iterator.hasNext()) {
+            sb.append(iterator.next());
+            if (iterator.hasNext()) { sb.append(", "); }
+        }
+        return listQuery("WHERE viestiketju_id IN (" + sb.toString() + ")");
+    }
+    
+    @Override
     public List<Viestiketju> findAllWithValue(String attribute, String value) throws SQLException {
         return listQuery("WHERE " + attribute + " = '" + value + "'");
     }
@@ -47,8 +58,7 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
     
     private List<Viestiketju> listQuery(String postfix) throws SQLException {
         Connection connection = database.getConnection();
-        String statement = "SELECT * FROM Viestiketju " + postfix;
-        PreparedStatement stmt = connection.prepareStatement(statement);
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju " + postfix);
         
         ResultSet rs = stmt.executeQuery();
         
@@ -76,12 +86,12 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
     }
 
     @Override
-    public void save(Viestiketju object) throws SQLException {
+    public Viestiketju findOneWithValue(String attribute, String value) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public List<Viestiketju> findAllIn(Collection<Integer> keys) throws SQLException {
+    public void save(Viestiketju object) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

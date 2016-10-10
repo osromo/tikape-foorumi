@@ -23,7 +23,7 @@ public class KayttajaDao implements Dao<Kayttaja, Integer> {
 
     @Override
     public Kayttaja findOne(Integer key) throws SQLException {
-        List<Kayttaja> kayttajat = executeQuery("WHERE kayttaja_id = " + key);
+        List<Kayttaja> kayttajat = listQuery("WHERE kayttaja_id = " + key);
         
         if (kayttajat.isEmpty()) { return null; }
         return kayttajat.get(0);
@@ -31,7 +31,18 @@ public class KayttajaDao implements Dao<Kayttaja, Integer> {
 
     @Override
     public List<Kayttaja> findAll() throws SQLException {
-        return executeQuery("");
+        return listQuery("");
+    }
+    
+    @Override
+    public List<Kayttaja> findAllIn(Collection<Integer> keys) throws SQLException {
+        StringBuilder sb = new StringBuilder();
+        Iterator iterator = keys.iterator();
+        while (iterator.hasNext()) {
+            sb.append(iterator.next());
+            if (iterator.hasNext()) { sb.append(", "); }
+        }
+        return listQuery("WHERE kayttaja_id IN (" + sb.toString() + ")");
     }
     
     @Override
@@ -44,7 +55,7 @@ public class KayttajaDao implements Dao<Kayttaja, Integer> {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
-    private List<Kayttaja> executeQuery(String postfix) throws SQLException {
+    private List<Kayttaja> listQuery(String postfix) throws SQLException {
         Connection connection = database.getConnection();
         PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Kayttaja " + postfix);
         ResultSet rs = stmt.executeQuery();
@@ -62,12 +73,15 @@ public class KayttajaDao implements Dao<Kayttaja, Integer> {
     }
 
     @Override
-    public void save(Kayttaja object) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Kayttaja findOneWithValue(String attribute, String value) throws SQLException {
+        List<Kayttaja> kayttajat = listQuery("WHERE " + attribute + " = '" + value + "'");
+        
+        if (kayttajat.isEmpty()) { return null; }
+        return kayttajat.get(0);
     }
 
     @Override
-    public List<Kayttaja> findAllIn(Collection<Integer> keys) throws SQLException {
+    public void save(Kayttaja object) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     

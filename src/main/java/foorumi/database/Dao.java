@@ -14,6 +14,8 @@ public interface Dao<T,K> {
     
     List<T> findAllIn(Collection<K> keys) throws SQLException;
     
+    T findOneWithValue(String attribute, String value) throws SQLException;
+    
     List<T> findAllWithValue(String attribute, String value) throws SQLException;
     
     void delete(K key) throws SQLException;
