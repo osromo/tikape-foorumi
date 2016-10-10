@@ -33,12 +33,6 @@ public class Viesti {
         this.viesti = viesti;
     }
 
-    public Viesti(Viestiketju viestiketju, Kayttaja kirjoittaja, String viesti) {
-        this.viestiketju = viestiketju;
-        this.kirjoittaja = kirjoittaja;
-        this.viesti = viesti;
-    }
-
     public int getViesti_id() {
         return viesti_id;
     }
