@@ -18,9 +18,13 @@ import java.util.Map;
 public class ViestiDao implements Dao<Viesti, Integer> {
     
     private Database database;
+    private ViestiketjuDao viestiketjuDao;
+    private KayttajaDao kayttajaDao;
 
-    public ViestiDao(Database database) {
+    public ViestiDao(Database database, ViestiketjuDao viestiketjuDao, KayttajaDao kayttajaDao) {
         this.database = database;
+        this.viestiketjuDao = viestiketjuDao;
+        this.kayttajaDao = kayttajaDao;
     }
 
     @Override
@@ -74,14 +78,14 @@ public class ViestiDao implements Dao<Viesti, Integer> {
            viestiKetjut.get(viestiketju).add(viesti);
        }
 
-        for (Viestiketju viestiketju : new ViestiketjuDao(database).findAllIn(viestiKetjut.keySet())) {
+        for (Viestiketju viestiketju : viestiketjuDao.findAllIn(viestiKetjut.keySet())) {
             for (Viesti viesti : viestiKetjut.get(viestiketju.getViestiketju_id())) {
                 viesti.setViestiketju(viestiketju);
             }
         }       
         
         
-        for (Kayttaja kirjoittaja : new KayttajaDao(database).findAllIn(viestiKirjoittajat.keySet())) {
+        for (Kayttaja kirjoittaja : kayttajaDao.findAllIn(viestiKirjoittajat.keySet())) {
             for (Viesti viesti : viestiKirjoittajat.get(kirjoittaja.getKayttaja_id())) {
                 viesti.setKirjoittaja(kirjoittaja);
             }
@@ -99,17 +103,31 @@ public class ViestiDao implements Dao<Viesti, Integer> {
     }
 
     @Override
-    public void save(Viesti viesti) throws SQLException {
+    public int save(String... args) throws SQLException {
+        if (args.length != 3) { return 0; }
+        
+        Viestiketju viestiketju = viestiketjuDao.findOne(Integer.parseInt(args[0]));
+        if (viestiketju == null) { return 0; }
+        
+        String nimimerkki = args[1];
+        Kayttaja kayttaja = kayttajaDao.findOneWithValue("nimimerkki", nimimerkki);
+        if (kayttaja == null) {
+            kayttajaDao.save(nimimerkki);
+            kayttaja = kayttajaDao.findOneWithValue("nimimerkki", nimimerkki);
+        }
+        
         Connection connection = database.getConnection();
         PreparedStatement stmt = connection.prepareStatement("INSERT INTO Viesti (viestiketju, kirjoittaja, viesti) VALUES (?,?,?)");
-        stmt.setObject(1, viesti.getViestiketju().getViestiketju_id());
-        stmt.setObject(2, viesti.getKirjoittaja().getKayttaja_id());
-        stmt.setObject(3, viesti.getViesti());
+        stmt.setInt(1, viestiketju.getViestiketju_id());
+        stmt.setInt(2, kayttaja.getKayttaja_id());
+        stmt.setString(3, args[2]);
         
-        stmt.executeUpdate();
+        int muutokset = stmt.executeUpdate();
         
         stmt.close();
         connection.close();
+        
+        return muutokset;
     }
     
 }

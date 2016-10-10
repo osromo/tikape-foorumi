@@ -20,6 +20,6 @@ public interface Dao<T,K> {
     
     void delete(K key) throws SQLException;
     
-    void save(T object) throws SQLException;
+    int save(String... args) throws SQLException;
     
 }

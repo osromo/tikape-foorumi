@@ -79,8 +79,19 @@ public class AlueDao implements Dao<Alue, Integer> {
     }
 
     @Override
-    public void save(Alue object) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int save(String... args) throws SQLException {
+        if (args.length != 1) { return 0; }
+        
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("INSERT INTO Alue (nimi) VALUES (?)");
+        stmt.setString(1, args[0]);
+
+        int muutokset = stmt.executeUpdate();
+
+        stmt.close();
+        connection.close();
+
+        return muutokset;
     }
     
 }

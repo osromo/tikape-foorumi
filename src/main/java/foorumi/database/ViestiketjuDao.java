@@ -17,9 +17,11 @@ import java.util.Map;
 public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
     
     private Database database;
+    private AlueDao alueDao;
 
-    public ViestiketjuDao(Database database) {
+    public ViestiketjuDao(Database database, AlueDao alueDao) {
         this.database = database;
+        this.alueDao = alueDao;
     }
 
     @Override
@@ -72,7 +74,7 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
                 viestiketjuAlueet.get(alue).add(viestiketju);
         }
         
-        for (Alue alue : new AlueDao(database).findAllIn(viestiketjuAlueet.keySet())) {
+        for (Alue alue : alueDao.findAllIn(viestiketjuAlueet.keySet())) {
             for (Viestiketju viestiketju : viestiketjuAlueet.get(alue.getAlue_id())) {
                 viestiketju.setAlue(alue);
             }
@@ -91,8 +93,23 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
     }
 
     @Override
-    public void save(Viestiketju object) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int save(String... args) throws SQLException {
+        if (args.length != 2) { return 0; }
+        
+        Alue alue = alueDao.findOne(Integer.parseInt(args[0]));
+        if (alue == null) { return 0; }
+        
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("INSERT INTO Viestiketju (alue, otsikko) VALUES (?,?)");
+        stmt.setInt(1, alue.getAlue_id());
+        stmt.setString(2, args[1]);
+        
+        int muutokset = stmt.executeUpdate();
+        
+        stmt.close();
+        connection.close();
+        
+        return muutokset;
     }
     
 }
