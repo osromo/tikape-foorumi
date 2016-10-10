@@ -22,10 +22,10 @@ public class Main {
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
         
         Database database = new Database("jdbc:sqlite:foorumi.db");
-        AlueDao alueDao = new AlueDao(database);
-        ViestiketjuDao viestiketjuDao = new ViestiketjuDao(database);
-        ViestiDao viestiDao = new ViestiDao(database);
         KayttajaDao kayttajaDao = new KayttajaDao(database);
+        AlueDao alueDao = new AlueDao(database);
+        ViestiketjuDao viestiketjuDao = new ViestiketjuDao(database, alueDao);
+        ViestiDao viestiDao = new ViestiDao(database, viestiketjuDao, kayttajaDao);
         
         get("/", (req, res) -> {
             HashMap map = new HashMap<>();
@@ -52,11 +52,8 @@ public class Main {
             return new ModelAndView(map, "topic");
         }, new ThymeleafTemplateEngine());
         
-        post("/topic/:id", (req, res) -> {
-            Kayttaja kirjoittaja = kayttajaDao.findOneWithValue("nimimerkki", req.queryParams("nimi"));
-            Viestiketju viestiketju = viestiketjuDao.findOne(Integer.parseInt(req.params("id")));
-            Viesti viesti = new Viesti(viestiketju, kirjoittaja, req.queryParams("viesti"));
-            viestiDao.save(viesti);
+        post("/newpost/:id", (req, res) -> {
+            viestiDao.save(req.params("id"), req.queryParams("nimimerkki"), req.queryParams("viesti"));
             
             res.redirect("/topic/" + req.params("id"));
             
