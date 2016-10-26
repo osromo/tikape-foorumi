@@ -95,17 +95,27 @@ public class ViestiDao implements Dao<Viesti, Integer> {
         return viimeisinAikaleimaViestiketjunMukaan;
     }
     
-    public Map<Integer, String> findLatestAikaleimaPerAlue(Collection<Alue> alueet) throws SQLException {
-        Collection<Viestiketju> viestiketjut = viestiketjuDao.findAllWithAlueIn(alueet);
+    public List<Viesti> findLatestViestitInAlue(Alue alue) throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT v.viesti_id, MAX(v.aikaleima) as viimeisin, v.viestiketju, vk.otsikko FROM Viesti v JOIN Viestiketju vk ON v.viestiketju = vk.viestiketju_id WHERE vk.alue = ? GROUP BY v.viestiketju ORDER BY viimeisin DESC");
+        stmt.setInt(1, alue.getAlue_id());
         
-        Map<Integer, String> viimeisinAikaleimaViestiketjunMukaan = findLatestAikaleimaPerViestiketju(viestiketjut);
-        Map<Integer, String> viimeisinAikaleimaAlueenMukaan = new HashMap<>();
-        for (Alue alue : alueet) { viimeisinAikaleimaAlueenMukaan.put(alue.getAlue_id(), null); }
+        ResultSet rs = stmt.executeQuery();
+        List<Viesti> viestit = new ArrayList<>();
+        while (rs.next()) {
+            viestit.add(new Viesti(
+                rs.getInt("viesti_id"),
+                new Viestiketju(rs.getInt("viestiketju"), null, rs.getString("otsikko")),
+                null,
+                rs.getString("viimeisin"),
+                null));
+        }
         
+        rs.close();
+        stmt.close();
+        connection.close();
         
-        
-        
-        return null;
+        return viestit;
     }
 
     @Override

@@ -80,6 +80,22 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
         return viestiketjut;
     }
     
+    public Viestiketju findWithOtsikko(String otsikko) throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju WHERE otsikko = ?");
+        stmt.setString(1, otsikko);
+        
+        ResultSet rs = stmt.executeQuery();
+        Viestiketju viestiketju = null;
+        if (rs.next()) { viestiketju = new Viestiketju(rs.getInt("viestiketju_id"), alueDao.findOne(rs.getInt("alue")), rs.getString("otsikko")); }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return viestiketju;
+    }
+    
     public List<Viestiketju> findAllWithAlue(Alue alue) throws SQLException {
         Connection connection = database.getConnection();
         PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju WHERE alue = ?");
@@ -129,8 +145,16 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
     }
 
     @Override
-    public void create(Viestiketju object) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void create(Viestiketju viestiketju) throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("INSERT INTO Viestiketju (alue, otsikko) VALUES (?, ?)");
+        stmt.setInt(1, viestiketju.getAlue().getAlue_id());
+        stmt.setString(2, viestiketju.getOtsikko());
+        
+        stmt.executeUpdate();
+        
+        stmt.close();
+        connection.close();
     }
     
     @Override
