@@ -7,6 +7,9 @@
     </head>
 
     <body>
+        <a th:href="@{~/}">Etusivu</a> /
+        <a th:href="@{~/forum/{id}(id=${viestiketju.alue.alue_id})}" th:text="${viestiketju.alue.nimi}">Alue</a> /
+        <span th:text="${viestiketju.otsikko}">Viestiketju</span>
         <ul>
             <li th:each="viesti: ${viestit}">
                 <span th:text="${viesti.aikaleima}"></span>
@@ -15,10 +18,10 @@
                 
             </li>
         </ul>
-        <form method="POST" th:action="${'/newpost/' + viestiketju}">
+        <form method="POST" th:action="@{~/topic/{id}/newpost(id=${viestiketju.viestiketju_id})}">
             Nimi:<br/>
             <input type="text" name="nimimerkki"/><br/>
-            viesti:<br/>
+            Viesti:<br/>
             <input type="text" name="viesti"/><br/>
             <input type="submit" value="Lähetä viesti"/>
         </form>
