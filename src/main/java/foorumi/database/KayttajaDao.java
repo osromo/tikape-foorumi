@@ -20,50 +20,31 @@ public class KayttajaDao implements Dao<Kayttaja, Integer> {
     public KayttajaDao(Database database) {
         this.database = database;
     }
-
+    
     @Override
     public Kayttaja findOne(Integer key) throws SQLException {
-        List<Kayttaja> kayttajat = listQuery("WHERE kayttaja_id = " + key);
-        
-        if (kayttajat.isEmpty()) { return null; }
-        return kayttajat.get(0);
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public List<Kayttaja> findAll() throws SQLException {
-        return listQuery("");
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     @Override
     public List<Kayttaja> findAllIn(Collection<Integer> keys) throws SQLException {
-        StringBuilder sb = new StringBuilder();
-        Iterator iterator = keys.iterator();
-        while (iterator.hasNext()) {
-            sb.append(iterator.next());
-            if (iterator.hasNext()) { sb.append(", "); }
+        StringBuilder muuttujat = new StringBuilder("?");
+        for (int i = 1; i < keys.size(); i++) {
+            muuttujat.append(", ?");
         }
-        return listQuery("WHERE kayttaja_id IN (" + sb.toString() + ")");
-    }
-    
-    @Override
-    public List<Kayttaja> findAllWithValue(String attribute, String value) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void delete(Integer key) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    private List<Kayttaja> listQuery(String postfix) throws SQLException {
-        Connection connection = database.getConnection();
-        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Kayttaja " + postfix);
-        ResultSet rs = stmt.executeQuery();
         
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Kayttaja WHERE kayttaja_id in ("+muuttujat+")");
+        int i = 1; for (Integer key : keys) { stmt.setInt(i, key); i++; }
+        
+        ResultSet rs = stmt.executeQuery();
         List<Kayttaja> kayttajat = new ArrayList<>();
-        while (rs.next()) {
-            kayttajat.add(new Kayttaja(rs.getInt("kayttaja_id"), rs.getString("nimimerkki")));
-        }
+        while (rs.next()) {kayttajat.add(new Kayttaja(rs.getInt("kayttaja_id"), rs.getString("nimimerkki"))); }
         
         rs.close();
         stmt.close();
@@ -72,28 +53,37 @@ public class KayttajaDao implements Dao<Kayttaja, Integer> {
         return kayttajat;
     }
 
-    @Override
-    public Kayttaja findOneWithValue(String attribute, String value) throws SQLException {
-        List<Kayttaja> kayttajat = listQuery("WHERE " + attribute + " = '" + value + "'");
+    public Kayttaja findWithNimimerkki(String nimimerkki) throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Kayttaja WHERE nimimerkki = ?");
+        stmt.setString(1, nimimerkki);
         
-        if (kayttajat.isEmpty()) { return null; }
-        return kayttajat.get(0);
+        ResultSet rs = stmt.executeQuery();
+        Kayttaja kayttaja = null;
+        if (rs.next()) { kayttaja = new Kayttaja(rs.getInt("kayttaja_id"), nimimerkki); }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return kayttaja;
     }
 
     @Override
-    public int save(String... args) throws SQLException {
-        if (args.length != 1) { return 0; }
-
+    public void create(Kayttaja kayttaja) throws SQLException {
         Connection connection = database.getConnection();
         PreparedStatement stmt = connection.prepareStatement("INSERT INTO Kayttaja (nimimerkki) VALUES (?)");
-        stmt.setString(1, args[0]);
-
-        int muutokset = stmt.executeUpdate();
-
+        stmt.setString(1, kayttaja.getNimimerkki());
+        
+        stmt.executeUpdate();
+        
         stmt.close();
         connection.close();
-
-        return muutokset;
+    }
+    
+    @Override
+    public void delete(Integer key) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

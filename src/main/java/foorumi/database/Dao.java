@@ -4,7 +4,6 @@ package foorumi.database;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public interface Dao<T,K> {
     
@@ -14,12 +13,8 @@ public interface Dao<T,K> {
     
     List<T> findAllIn(Collection<K> keys) throws SQLException;
     
-    T findOneWithValue(String attribute, String value) throws SQLException;
-    
-    List<T> findAllWithValue(String attribute, String value) throws SQLException;
+    void create(T object) throws SQLException;
     
     void delete(K key) throws SQLException;
-    
-    int save(String... args) throws SQLException;
     
 }

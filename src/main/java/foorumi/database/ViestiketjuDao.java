@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,56 +25,98 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
 
     @Override
     public Viestiketju findOne(Integer key) throws SQLException {
-        List<Viestiketju> viestiketjut = listQuery("WHERE viestiketju_id = " + key);
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju WHERE viestiketju_id = ?");
+        stmt.setInt(1, key);
         
-        if (viestiketjut.isEmpty()) { return null; }
-        return viestiketjut.get(0);
+        ResultSet rs = stmt.executeQuery();
+        Viestiketju viestiketju = null;
+        if (rs.next()) { viestiketju = new Viestiketju(rs.getInt("viestiketju_id"), alueDao.findOne(rs.getInt("alue")), rs.getString("otsikko")); }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return viestiketju;
     }
-
+    
     @Override
     public List<Viestiketju> findAll() throws SQLException {
-        return listQuery("");
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     @Override
     public List<Viestiketju> findAllIn(Collection<Integer> keys) throws SQLException {
-        StringBuilder sb = new StringBuilder();
-        Iterator iterator = keys.iterator();
-        while (iterator.hasNext()) {
-            sb.append(iterator.next());
-            if (iterator.hasNext()) { sb.append(", "); }
+        StringBuilder muuttujat = new StringBuilder("?");
+        for (int i = 1; i < keys.size(); i++) {
+            muuttujat.append(", ?");
         }
-        return listQuery("WHERE viestiketju_id IN (" + sb.toString() + ")");
-    }
-    
-    @Override
-    public List<Viestiketju> findAllWithValue(String attribute, String value) throws SQLException {
-        return listQuery("WHERE " + attribute + " = '" + value + "'");
-    }
-
-    @Override
-    public void delete(Integer key) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    private List<Viestiketju> listQuery(String postfix) throws SQLException {
+        
         Connection connection = database.getConnection();
-        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju " + postfix);
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju WHERE viestiketju_id IN (" + muuttujat + ")");
+        int i = 1; for (Integer key : keys) { stmt.setInt(i, key); i++; }
         
         ResultSet rs = stmt.executeQuery();
-        
-        Map<Integer, List<Viestiketju>> viestiketjuAlueet = new HashMap<>();
         List<Viestiketju> viestiketjut = new ArrayList<>();
+        Map<Integer, List<Viestiketju>> viestiketjutAlueenMukaan = new HashMap<>();
         while (rs.next()) {
-                int alue = rs.getInt("alue");
-                Viestiketju viestiketju = new Viestiketju(rs.getInt("viestiketju_id"), rs.getString("otsikko"));
-                viestiketjut.add(viestiketju);
-                if (!viestiketjuAlueet.containsKey(alue)) { viestiketjuAlueet.put(alue, new ArrayList<>()); }
-                viestiketjuAlueet.get(alue).add(viestiketju);
+            Viestiketju viestiketju = new Viestiketju(rs.getInt("viestiketju_id"), null, rs.getString("otsikko"));
+            viestiketjut.add(viestiketju);
+            int alue = rs.getInt("alue");
+            if (!viestiketjutAlueenMukaan.containsKey(alue)) { viestiketjutAlueenMukaan.put(alue, new ArrayList<>()); }
+            viestiketjutAlueenMukaan.get(alue).add(viestiketju);
         }
         
-        for (Alue alue : alueDao.findAllIn(viestiketjuAlueet.keySet())) {
-            for (Viestiketju viestiketju : viestiketjuAlueet.get(alue.getAlue_id())) {
+        for (Alue alue : alueDao.findAllIn(viestiketjutAlueenMukaan.keySet())) {
+            for (Viestiketju viestiketju : viestiketjutAlueenMukaan.get(alue.getAlue_id())) {
+                viestiketju.setAlue(alue);
+            }
+        }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return viestiketjut;
+    }
+    
+    public List<Viestiketju> findAllWithAlue(Alue alue) throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju WHERE alue = ?");
+        stmt.setInt(1, alue.getAlue_id());
+        
+        ResultSet rs = stmt.executeQuery();
+        List<Viestiketju> viestiketjut = new ArrayList<>();
+        while(rs.next()) { viestiketjut.add(new Viestiketju(rs.getInt("viestiketju_id"), alue, rs.getString("otsikko"))); }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return viestiketjut;
+    }
+    
+    public List<Viestiketju> findAllWithAlueIn(Collection<Alue> alueet) throws SQLException {
+        StringBuilder muuttujat = new StringBuilder("?");
+        for (int i = 1; i < alueet.size(); i++) { muuttujat.append(", ?"); }
+        
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Viestiketju WHERE alue IN (" + muuttujat + ")");
+        int i = 1; for (Alue alue : alueet) { stmt.setInt(i, alue.getAlue_id()); i++; }
+        
+        ResultSet rs = stmt.executeQuery();
+        List<Viestiketju> viestiketjut = new ArrayList<>();
+        Map<Integer, List<Viestiketju>> viestiketjutAlueenMukaan = new HashMap<>();
+        while (rs.next()) {
+            Viestiketju viestiketju = new Viestiketju(rs.getInt("viestiketju_id"), null, rs.getString("otsikko"));
+            viestiketjut.add(viestiketju);
+            int alue = rs.getInt("alue");
+            if (!viestiketjutAlueenMukaan.containsKey(alue)) { viestiketjutAlueenMukaan.put(alue, new ArrayList<>()); }
+            viestiketjutAlueenMukaan.get(alue).add(viestiketju);
+        }
+        
+        for (Alue alue : alueet) {
+            for (Viestiketju viestiketju : viestiketjutAlueenMukaan.get(alue.getAlue_id())) {
                 viestiketju.setAlue(alue);
             }
         }
@@ -88,28 +129,13 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
     }
 
     @Override
-    public Viestiketju findOneWithValue(String attribute, String value) throws SQLException {
+    public void create(Viestiketju object) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
     @Override
-    public int save(String... args) throws SQLException {
-        if (args.length != 2) { return 0; }
-        
-        Alue alue = alueDao.findOne(Integer.parseInt(args[0]));
-        if (alue == null) { return 0; }
-        
-        Connection connection = database.getConnection();
-        PreparedStatement stmt = connection.prepareStatement("INSERT INTO Viestiketju (alue, otsikko) VALUES (?,?)");
-        stmt.setInt(1, alue.getAlue_id());
-        stmt.setString(2, args[1]);
-        
-        int muutokset = stmt.executeUpdate();
-        
-        stmt.close();
-        connection.close();
-        
-        return muutokset;
+    public void delete(Integer key) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

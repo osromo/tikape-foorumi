@@ -23,47 +23,29 @@ public class AlueDao implements Dao<Alue, Integer> {
 
     @Override
     public Alue findOne(Integer key) throws SQLException {
-        List<Alue> alueet = listQuery("WHERE alue_id = " + key);
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Alue WHERE alue_id = ?");
+        stmt.setInt(1, key);
         
-        if (alueet.isEmpty()) { return null; }
-        return alueet.get(0);
+        ResultSet rs = stmt.executeQuery();
+        Alue alue = null;
+        if (rs.next()) { alue = new Alue(rs.getInt("alue_id"), rs. getString("nimi")); }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return alue;
     }
     
     @Override
     public List<Alue> findAll() throws SQLException {
-        return listQuery("");
-    }
-    
-    @Override
-    public List<Alue> findAllIn(Collection<Integer> keys) throws SQLException {
-        StringBuilder sb = new StringBuilder();
-        Iterator iterator = keys.iterator();
-        while (iterator.hasNext()) {
-            sb.append(iterator.next());
-            if (iterator.hasNext()) { sb.append(", "); }
-        }
-        return listQuery("WHERE alue_id IN (" + sb.toString() + ")");
-    }
-    
-    @Override
-    public List<Alue> findAllWithValue(String attribute, String value) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void delete(Integer key) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    private List<Alue> listQuery(String postfix) throws SQLException {
         Connection connection = database.getConnection();
-        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Alue " + postfix);
-        ResultSet rs = stmt.executeQuery();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Alue ORDER BY nimi");
         
+        ResultSet rs = stmt.executeQuery();
         List<Alue> alueet = new ArrayList<>();
-        while(rs.next()) {
-            alueet.add(new Alue(rs.getInt("alue_id"), rs.getString("nimi")));
-        }
+        while (rs.next()) { alueet.add(new Alue(rs.getInt("alue_id"), rs.getString("nimi"))); }
         
         rs.close();
         stmt.close();
@@ -71,27 +53,58 @@ public class AlueDao implements Dao<Alue, Integer> {
         
         return alueet;
     }
-
+    
+    @Override
+    public List<Alue> findAllIn(Collection<Integer> keys) throws SQLException {
+        StringBuilder muuttujat = new StringBuilder("?");
+        for (int i = 1; i < keys.size(); i++) { muuttujat.append(", ?"); }
+        
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Alue WHERE alue_id in ("+muuttujat+")");
+        int i = 1; for (Integer key : keys) { stmt.setInt(i, key); i++; }
+        
+        ResultSet rs = stmt.executeQuery();
+        List<Alue> alueet = new ArrayList<>();
+        while (rs.next()) { alueet.add(new Alue(rs.getInt("alue_id"), rs.getString("nimi"))); }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return alueet;
+    }
+    
+    public Alue findWithName(String nimi) throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT * FROM Alue WHERE nimi = ?");
+        stmt.setString(1, nimi);
+        
+        ResultSet rs = stmt.executeQuery();
+        Alue alue = null;
+        if (rs.next()) { alue = new Alue(rs.getInt("alue_id"), rs.getString("nimi")); }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return alue;
+    }
 
     @Override
-    public Alue findOneWithValue(String attribute, String value) throws SQLException {
+    public void delete(Integer key) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public int save(String... args) throws SQLException {
-        if (args.length != 1) { return 0; }
-        
+    public void create(Alue alue) throws SQLException {
         Connection connection = database.getConnection();
         PreparedStatement stmt = connection.prepareStatement("INSERT INTO Alue (nimi) VALUES (?)");
-        stmt.setString(1, args[0]);
-
-        int muutokset = stmt.executeUpdate();
-
+        stmt.setString(1, alue.getNimi());
+        
+        stmt.executeUpdate();
+        
         stmt.close();
         connection.close();
-
-        return muutokset;
     }
     
 }
