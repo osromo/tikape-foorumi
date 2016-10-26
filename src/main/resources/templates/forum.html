@@ -7,10 +7,11 @@
     </head>
 
     <body>
-        <span th:text="${alue.nimi}">Alue</span>
+        <a th:href="@{~/}">Foorumi</a> / <span th:text="${alue.nimi}">Alue</span>
         <ul>
             <li th:each="viestiketju: ${viestiketjut}">
-                <a th:href="${'/topic/' + viestiketju.viestiketju_id}"><span th:text="${viestiketju.otsikko}">Viestiketju</span></a>
+                <a th:href="@{~/topic/{id}(id=${viestiketju.viestiketju_id})}" th:text="${viestiketju.otsikko}">Viestiketju</a>
+                <span th:text="${viimeisimmatViestit.get(viestiketju.viestiketju_id)}">aikaleima</span>
             </li>
         </ul>
 

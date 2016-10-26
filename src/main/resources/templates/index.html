@@ -7,7 +7,9 @@
     </head>
 
     <body>
+        <span>Foorumi</span>
         <ul>
+            <li>Alue Viestejä Viestiketjuja Viimeisin viesti</li>
             <li th:each="alue: ${alueet}">
                 <a th:href="${'/forum/' + alue.alue_id}"><span th:text="${alue.nimi}"></span></a>
             </li>
