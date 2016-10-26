@@ -8,12 +8,21 @@
 
     <body>
         <a th:href="@{~/}">Foorumi</a> / <span th:text="${alue.nimi}">Alue</span>
-        <ul>
-            <li th:each="viestiketju: ${viestiketjut}">
-                <a th:href="@{~/topic/{id}(id=${viestiketju.viestiketju_id})}" th:text="${viestiketju.otsikko}">Viestiketju</a>
-                <span th:text="${viimeisimmatViestit.get(viestiketju.viestiketju_id)}">aikaleima</span>
-            </li>
-        </ul>
+        
+        <table>
+            <tr>
+                <th>Viestiketju</th>
+                <th>Viimeisin viesti</th>
+            </tr>
+            <tr th:each="viesti: ${viestit}">
+                <td><a th:href="@{~/topic/{id}(id=${viesti.viestiketju.viestiketju_id})}" th:text="${viesti.viestiketju.otsikko}">Viestiketju</a></td>
+                <td th:text="${viesti.aikaleima}">aikaleima</td>
+            </tr>
+        </table>
+        
+        <form method="GET" th:action="@{~/forum/{id}/newtopic(id=${alue.alue_id})}">
+            <input type="submit" value="Luo uusi" />
+        </form>
 
     </body>
 </html>

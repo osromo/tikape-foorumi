@@ -7,11 +7,11 @@
     </head>
 
     <body>
-        <form method="POST" th:action="@{~/topic/{id}/newtopic(id=${alue.alue_id})}">
-            Otsikko<input type="text" name="otsikko"/>
-            Viesti<input type="textarea" name="viesti" />
-            Nimimerkki<input type="text" name="nimimerkki"/>
-            <input type="submit"/>    
+        <form method="POST" th:action="@{~/forum/{id}/newtopic(id=${alue.alue_id})}">
+            Otsikko <input type="text" name="otsikko"/> <br /> 
+            Viesti <input type="textarea" name="viesti" /> <br />
+            Nimimerkki <input type="text" name="nimimerkki"/> <br />
+            <input type="submit" value="Lähetä"/>
         </form>
     </body>
 </html>

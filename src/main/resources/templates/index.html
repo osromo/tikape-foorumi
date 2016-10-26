@@ -8,12 +8,19 @@
 
     <body>
         <span>Foorumi</span>
-        <ul>
-            <li>Alue Viestejä Viestiketjuja Viimeisin viesti</li>
-            <li th:each="alue: ${alueet}">
-                <a th:href="${'/forum/' + alue.alue_id}"><span th:text="${alue.nimi}"></span></a>
-            </li>
-        </ul>
+        <table>
+            <tr>
+                <th>Alue</th>
+            </tr>
+            <tr th:each="alue: ${alueet}">
+                <td><a th:href="${'/forum/' + alue.alue_id}"><span th:text="${alue.nimi}"></span></a></td>
+            </tr>
+        </table>
+        
+        <form method="POST" action="/newforum">
+            Uusi alue: <input type="text" name="nimi"/>
+            <input type="submit" value="Lisää"/>
+        </form>
 
     </body>
 </html>
