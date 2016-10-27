@@ -2,6 +2,7 @@
 package foorumi.database;
 
 import foorumi.domain.Alue;
+import foorumi.domain.Osiotieto;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -88,6 +89,23 @@ public class AlueDao implements Dao<Alue, Integer> {
         connection.close();
         
         return alue;
+    }
+    
+    public List<Osiotieto> FindAllInfo() throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT a.alue_id, a.nimi, MAX(v.aikaleima) as viimeisinviesti, COUNT(v.viesti_id) as viesteja FROM Alue a LEFT JOIN Viestiketju vk ON a.alue_id = vk.alue LEFT JOIN Viesti v ON vk.viestiketju_id = v.viestiketju GROUP BY a.alue_id ORDER BY a.nimi ASC");
+        
+        ResultSet rs = stmt.executeQuery();
+        List<Osiotieto> tiedot = new ArrayList<>();
+        while (rs.next()) {
+            tiedot.add(new Osiotieto(rs.getInt("alue_id"), rs.getString("nimi"), rs.getInt("viesteja"), rs.getString("viimeisinviesti")));
+        }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return tiedot;
     }
 
     @Override

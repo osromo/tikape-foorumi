@@ -2,6 +2,7 @@
 package foorumi.database;
 
 import foorumi.domain.Alue;
+import foorumi.domain.Osiotieto;
 import foorumi.domain.Viestiketju;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -142,6 +143,27 @@ public class ViestiketjuDao implements Dao<Viestiketju, Integer> {
         connection.close();
         
         return viestiketjut;
+    }
+    
+    public List<Osiotieto> findInfoFromAlue(Alue alue, int mista, int monta) throws SQLException {
+        Connection connection = database.getConnection();
+        PreparedStatement stmt = connection.prepareStatement("SELECT vk.viestiketju_id, vk.otsikko, MAX(v.aikaleima) AS viimeisinviesti, COUNT(v.viesti_id) AS viesteja FROM Viestiketju vk LEFT JOIN Viesti v ON vk.viestiketju_id = v.viestiketju WHERE vk.alue = ? GROUP BY vk.viestiketju_id ORDER BY viimeisinviesti DESC LIMIT ? OFFSET ?");
+        stmt.setInt(1, alue.getAlue_id());
+        stmt.setInt(2, monta);
+        stmt.setInt(3, mista);
+        
+        ResultSet rs = stmt.executeQuery();
+        
+        List<Osiotieto> tiedot = new ArrayList<>();
+        while (rs.next()) {
+            tiedot.add(new Osiotieto(rs.getInt("viestiketju_id"), rs.getString("otsikko"), rs.getInt("viesteja"), rs.getString("viimeisinviesti")));
+        }
+        
+        rs.close();
+        stmt.close();
+        connection.close();
+        
+        return tiedot;
     }
 
     @Override
