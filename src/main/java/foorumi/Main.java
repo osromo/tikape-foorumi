@@ -8,6 +8,7 @@ import foorumi.database.ViestiDao;
 import foorumi.database.ViestiketjuDao;
 import foorumi.domain.Alue;
 import foorumi.domain.Kayttaja;
+import foorumi.domain.Osiotieto;
 import foorumi.domain.Viesti;
 import foorumi.domain.Viestiketju;
 import java.sql.SQLException;
@@ -29,7 +30,7 @@ public class Main {
         
         get("/", (req, res) -> {
             HashMap map = new HashMap<>();
-            map.put("alueet", alueDao.findAll());
+            map.put("osiot", alueDao.FindAllInfo());
 
             return new ModelAndView(map, "index");
         }, new ThymeleafTemplateEngine());
@@ -46,9 +47,17 @@ public class Main {
         get("/forum/:id", (req, res) -> {
             HashMap map = new HashMap<>();
             Alue alue = alueDao.findOne(Integer.parseInt(req.params(":id")));
-            List<Viesti> viestit = viestiDao.findLatestViestitInAlue(alue);
+            int sivu = (req.queryParams("page") == null) ? 1 : Integer.parseInt(req.queryParams("page"));
+            List<Osiotieto> osiot = viestiketjuDao.findInfoFromAlue(alue, (sivu-1)*10, 11);
+            if (osiot.size() > 10) {
+                osiot.remove(10);
+                map.put("seuraava", true);
+            } else {
+                map.put("seuraava", false);
+            }
+            map.put("sivu", sivu);
             map.put("alue", alue);
-            map.put("viestit", viestit);
+            map.put("osiot", osiot);
             
             return new ModelAndView(map, "forum");
         }, new ThymeleafTemplateEngine());
@@ -62,10 +71,12 @@ public class Main {
         }, new ThymeleafTemplateEngine());
         
         post("/forum/:id/newtopic", (req, res) -> {
+            String nimimerkki = req.queryParams("nimimerkki");
+            if (nimimerkki.trim().isEmpty()) { res.redirect("/topic/" + req.params(":id")); }
+            
             Alue alue = alueDao.findOne(Integer.parseInt(req.params(":id")));
             viestiketjuDao.create(new Viestiketju(0, alue, req.queryParams("otsikko")));
             Viestiketju viestiketju = viestiketjuDao.findWithOtsikko(req.queryParams("otsikko"));
-            String nimimerkki = req.queryParams("nimimerkki");
             Kayttaja kirjoittaja = kayttajaDao.findWithNimimerkki(nimimerkki);
             if (kirjoittaja == null) {
                 kayttajaDao.create(new Kayttaja(0, nimimerkki));
@@ -82,8 +93,18 @@ public class Main {
         get("/topic/:id", (req, res) -> {
             HashMap map = new HashMap<>();
             Viestiketju viestiketju = viestiketjuDao.findOne(Integer.parseInt(req.params(":id")));
+            int sivu = (req.queryParams("page") == null) ? 1 : Integer.parseInt(req.queryParams("page"));
+            List<Viesti> viestit = viestiDao.findFromViestiketju(viestiketju, (sivu-1)*10, 11);
+            int viesteja = viestit.size();
+            if (viesteja > 10) {
+                viestit.remove(10);
+                map.put("seuraava", true);
+            } else {
+                map.put("seuraava", false);
+            }
+            map.put("sivu", sivu);
             map.put("viestiketju", viestiketju);
-            map.put("viestit", viestiDao.findAllInViestiketju(viestiketju));
+            map.put("viestit", viestit);
             
             return new ModelAndView(map, "topic");
         }, new ThymeleafTemplateEngine());
@@ -98,7 +119,7 @@ public class Main {
             }
             viestiDao.create(new Viesti(0, viestiketju, kirjoittaja, null, req.queryParams("viesti")));
             
-            res.redirect("/topic/" + req.params(":id"));
+            res.redirect("/topic/" + req.params(":id") + "?page=" + req.queryParams("sivu"));
             
             return "";
         });
