@@ -8,12 +8,17 @@
 
     <body>
         <span>Foorumi</span>
+        
         <table>
             <tr>
                 <th>Alue</th>
+                <th>Viestejä</th>
+                <th>Viimeisin viesti</th>
             </tr>
-            <tr th:each="alue: ${alueet}">
-                <td><a th:href="${'/forum/' + alue.alue_id}"><span th:text="${alue.nimi}"></span></a></td>
+            <tr th:each="osio: ${osiot}">
+                <td><a th:href="@{~/forum/{id}(id=${osio.osio_id})}" th:text="${osio.osio_nimi}">Alue</a></td>
+                <td th:text="${osio.osio_viesteja}">n/a</td>
+                <td th:text="${osio.osio_viimeisinviesti}">pvm</td>
             </tr>
         </table>
         

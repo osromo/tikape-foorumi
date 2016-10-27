@@ -7,9 +7,10 @@
     </head>
 
     <body>
-        <a th:href="@{~/}">Etusivu</a> /
+        <a href="/">Etusivu</a> /
         <a th:href="@{~/forum/{id}(id=${viestiketju.alue.alue_id})}" th:text="${viestiketju.alue.nimi}">Alue</a> /
-        <span th:text="${viestiketju.otsikko}">Viestiketju</span>
+        <span th:text="${viestiketju.otsikko}">Viestiketju</span> /
+        <span th:text="${'sivu ' + sivu}">sivu n</span>
         <table>
             <tr>
                 <th>Aika</th>
@@ -22,11 +23,16 @@
                 <td th:text="${viesti.viesti}"></td>
             </tr>
         </table>
+        
+        <a th:if="${sivu>1}" th:href="@{~/topic/{id}?page={page}(id=${viestiketju.viestiketju_id}, page=${sivu-1})}">edellinen sivu</a>
+        <a th:if="${seuraava}" th:href="@{~/topic/{id}?page={page}(id=${viestiketju.viestiketju_id}, page=${sivu+1})}">seuraava sivu</a>
+        
         <form method="POST" th:action="@{~/topic/{id}/newpost(id=${viestiketju.viestiketju_id})}">
             Nimi:<br/>
             <input type="text" name="nimimerkki"/><br/>
             Viesti:<br/>
             <input type="text" name="viesti"/><br/>
+            <input type="hidden" name="sivu" th:value="${sivu}"/>
             <input type="submit" value="Lähetä"/>
         </form>
 

@@ -7,21 +7,26 @@
     </head>
 
     <body>
-        <a th:href="@{~/}">Foorumi</a> / <span th:text="${alue.nimi}">Alue</span>
+        <a href="/">Foorumi</a> / <span th:text="${alue.nimi}">Alue</span>
         
         <table>
             <tr>
                 <th>Viestiketju</th>
+                <th>Viestejä</th>
                 <th>Viimeisin viesti</th>
             </tr>
-            <tr th:each="viesti: ${viestit}">
-                <td><a th:href="@{~/topic/{id}(id=${viesti.viestiketju.viestiketju_id})}" th:text="${viesti.viestiketju.otsikko}">Viestiketju</a></td>
-                <td th:text="${viesti.aikaleima}">aikaleima</td>
+            <tr th:each="osio: ${osiot}">
+                <td><a th:href="@{~/topic/{id}(id=${osio.osio_id})}" th:text="${osio.osio_nimi}">Viestiketju</a></td>
+                <td th:text="${osio.osio_viesteja}">n/a</td>
+                <td th:text="${osio.osio_viimeisinviesti}">aikaleima</td>
             </tr>
         </table>
         
+        <a th:if="${sivu>1}" th:href="@{~/forum/{id}?page={page}(id=${alue.alue_id}, page=${sivu-1})}">edellinen sivu</a>
+        <a th:if="${seuraava}" th:href="@{~/forum/{id}?page={page}(id=${alue.alue_id}, page=${sivu+1})}">seuraava sivu</a>
+        
         <form method="GET" th:action="@{~/forum/{id}/newtopic(id=${alue.alue_id})}">
-            <input type="submit" value="Luo uusi" />
+            <input type="submit" value="Lisää uusi keskustelu" />
         </form>
 
     </body>
