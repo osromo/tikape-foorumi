@@ -2,15 +2,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
     <head>
-        <title>Foorumi</title>
+        <title>Uusi viestiketju</title>
         <meta charset="utf-8" />
     </head>
 
     <body>
+        <a href="/">Foorumi</a> /
+        <a th:href="@{~/forum/{id}(id=${alue.alue_id})}" th:text="${alue.nimi}">Alue</a> /
+        <span>Uusi keskustelu</span>
+        
         <form method="POST" th:action="@{~/forum/{id}/newtopic(id=${alue.alue_id})}">
-            Otsikko <input type="text" name="otsikko"/> <br /> 
-            Viesti <input type="text" name="viesti" /> <br />
-            Nimimerkki <input type="text" name="nimimerkki"/> <br />
+            Otsikko <br/>
+            <input type="text" name="otsikko"/> <br/>
+            Viesti <br/>
+            <textarea name="viesti" /> <br/>
+            Nimimerkki <br/>
+            <input type="text" name="nimimerkki"/> <br/>
             <input type="submit" value="Lähetä"/>
         </form>
     </body>
