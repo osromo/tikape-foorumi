@@ -21,8 +21,21 @@ import spark.template.thymeleaf.ThymeleafTemplateEngine;
 public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
+        // asetetaan portti jos heroku antaa PORT-ympäristömuuttujan
+        if (System.getenv("PORT") != null) {
+            port(Integer.valueOf(System.getenv("PORT")));
+           
+        }
+          // käytetään oletuksena paikallista sqlite-tietokantaa
+        String jdbcOsoite = "jdbc:sqlite:foorumi.db";
+        // jos heroku antaa käyttöömme tietokantaosoitteen, otetaan se käyttöön
+        if (System.getenv("DATABASE_URL") != null) {
+            jdbcOsoite = System.getenv("DATABASE_URL");
+        } 
+
+        ///Database db = new Database(jdbcOsoite);
         
-        Database database = new Database("jdbc:sqlite:foorumi.db");
+        Database database = new Database(jdbcOsoite);
         KayttajaDao kayttajaDao = new KayttajaDao(database);
         AlueDao alueDao = new AlueDao(database);
         ViestiketjuDao viestiketjuDao = new ViestiketjuDao(database, alueDao);
